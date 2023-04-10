@@ -1,14 +1,13 @@
-from dotenv import load_dotenv
 import os
-import telebot
-from telebot import types
-import json
-import urllib.request
 import requests
+import telebot
 import wikipedia
-# This library will be used to parse the JSON data returned by the API.
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+import subprocess
 
 load_dotenv()
+
 API_KEY = os.getenv('API_KEY')
 bot = telebot.TeleBot(API_KEY)
 
@@ -18,15 +17,15 @@ url = f"https://gnews.io/api/v4/search?q=example&lang=en-ph&country=ph&max=5&api
 # Create a log file to store all messages
 log_file = open('message_log.txt', 'a', encoding='utf-8')
 
-# Create a log file to store all users
-log_file = open('user_log.txt', 'a')
+app_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
-# Get all updates received by the bot
-updates = bot.get_updates()
-
-with urllib.request.urlopen(url) as response:
-    data = json.loads(response.read().decode("utf-8"))
+# Get top 5 articles from the news API
+response = requests.get(url)
+if response.status_code == 200:
+    data = response.json()
     articles = data["articles"]
+else:
+    articles = []
 
 @bot.message_handler(commands=['start'])
 def greet(message):
@@ -41,6 +40,12 @@ def help(message):
                                       "/news - Get links to the top news on Google.\n"
                                       "/wiki - Search for a topic on Wikipedia.\n"
                                       "/help - Show this list of available commands.")
+    
+@bot.message_handler(commands=['browser'])
+def help(message):
+    bot.send_message(message.chat.id, "Opening the browser...\n\n")
+    subprocess.Popen([app_path, "https://www.google.com/"])
+
 
 @bot.message_handler(commands=['wiki'])
 def wiki(message):
@@ -68,7 +73,7 @@ def news(message):
             message_text = f"<b><i><a href='{url}'>{title}</a></i></b>\n\n{description}"
             bot.send_message(message.chat.id, message_text, parse_mode='HTML')
     except requests.exceptions.ConnectionError:
-          bot.send_message(message.chat.id, "Sorry, there was an error connecting to the news source. Please try again later.")
+        bot.send_message(message.chat.id, "Sorry, there was an error connecting to the news source. Please try again later.")
 
 @bot.message_handler(func=lambda message: True)
 def log_messages(message):
