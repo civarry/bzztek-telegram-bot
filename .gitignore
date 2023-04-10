@@ -1,1 +1,4 @@
 .env
+
+# ignore ALL files in ANY directory named temp
+env/
