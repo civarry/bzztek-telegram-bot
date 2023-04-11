@@ -5,6 +5,9 @@ import wikipedia
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import subprocess
+import datetime
+from telebot import types
+import time
 
 load_dotenv()
 
@@ -46,6 +49,15 @@ def help(message):
     bot.send_message(message.chat.id, "Opening the browser...\n\n")
     subprocess.Popen([app_path, "https://www.google.com/"])
 
+# @bot.message_handler(commands=['time'])
+# def send_time_periodically(message):
+#     while True:
+#         # Get the current time and format it
+#         current_time = datetime.datetime.now().strftime('%H:%M:%S')
+#         # Send the time to the user
+#         bot.send_message(message.chat.id, f"The current time is {current_time}")
+#         # Wait for 1 minute
+#         # time.sleep(60)
 
 @bot.message_handler(commands=['wiki'])
 def wiki(message):
